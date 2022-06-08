@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.web.jsp.web.repository.BoardRepository">
+
+    <insert id="insertBoard" parameterType="com.web.jsp.domain.dto.BoardDto">
+        INSERT INTO BOARD (member_idx,
+                            board_name,
+                            board_body,
+                            board_state
+                            )
+        VALUES (#{memberIdx},
+                #{boardName},
+                #{boardBody},
+                'N'
+                )
+        <selectKey>
+            SELECT board_idx FROM BOARD ORDER BY date_reg DESC LIMIT 1
+        </selectKey>
+    </insert>
+
+    <insert id="insertProduct" parameterType="com.web.jsp.domain.dto.BoardDto">
+        INSERT INTO PRODUCT (
+        member_idx,
+        board_idx,
+        product_state
+        )
+        VALUES (
+        #{memberIdx},
+        #{boardIdx},
+        'N'
+        )
+        <selectKey>
+            SELECT product_idx FROM PRODUCT ORDER BY date_reg DESC LIMIT 1
+        </selectKey>
+    </insert>
+
+    <insert id="insertProductDetail" parameterType="com.web.jsp.domain.dto.BoardDto">
+        INSERT INTO product_detail (
+        product_idx,
+        product_name,
+        product_price,
+        product_amount,
+        product_image
+        )
+        VALUES (
+        #{productIdx},
+        #{productName},
+        #{productPrice},
+        #{productAmout},
+        #{productImage}
+        )
+    </insert>
+
+    <select id="getBoardList" parameterType="com.web.jsp.domain.dto.BoardDto" resultType="com.web.jsp.domain.dto.BoardDto">
+        SELECT
+            b.board_idx,
+            b,board_name,
+            b.board_body,
+            b.board_heart,
+            b.date_reg,
+            b.date_mod,
+            m.member_nick,
+            m.member_idx,
+            p.product_state,
+            pd.product_image,
+            pd.product_amount,
+            pd.product_name,
+            pd.product_price,
+            pd.product_idx
+        FROM board b
+        LEFT JOIN product p on b.board_idx = p.board_idx
+        LEFT JOIN product_detail pd on p.product_idx = pd.product_idx
+        LEFT JOIN member m on m.member_idx = b.member_idx
+        WHERE b.state_del = 'N'
+        <if test="memberIdx != null and memberIdx != ''">
+            AND b.member_idx = #{memberIdx}
+        </if>
+        <if test="boardIdx != null and boardIdx != ''">
+            AND b.board_idx = #{boardIdx}
+        </if>
+    </select>
+
+    <select id="getBoard" parameterType="com.web.jsp.domain.dto.BoardDto" resultType="com.web.jsp.domain.dto.BoardDto">
+        SELECT
+        b.board_idx,
+        b,board_name,
+        b.board_body,
+        b.board_heart,
+        b.date_reg,
+        b.date_mod,
+        m.member_nick,
+        m.member_idx,
+        p.product_state,
+        pd.product_image,
+        pd.product_amount,
+        pd.product_name,
+        pd.product_price,
+        pd.product_idx
+        FROM board b
+        LEFT JOIN product p on b.board_idx = p.board_idx
+        LEFT JOIN product_detail pd on p.product_idx = pd.product_idx
+        LEFT JOIN member m on m.member_idx = b.member_idx
+        WHERE b.state_del = 'N'
+        <if test="memberIdx != null and memberIdx != ''">
+            AND b.member_idx = #{memberIdx}
+        </if>
+        <if test="boardIdx != null and boardIdx != ''">
+            AND b.board_idx = CAST(#{boardIdx} AS uuid)
+        </if>
+        LIMIT 1;
+    </select>
+
+    <update id="updateBoard" parameterType="com.web.jsp.domain.dto.BoardDto">
+        UPDATE
+            MEMBER
+        SET
+            state_del = 'Y',
+            date_mod = CURRENT_TIMESTAMP
+        WHERE state_del = 'N'
+        <if test="memberIdx != null and memberIdx != ''">
+            AND member_idx = #{memberIdx}
+        </if>
+        <if test="memberId != null and memberId != ''">
+            AND member_id = #{memberId}
+        </if>
+    </update>
+
+    <update id="deleteBoard" parameterType="com.web.jsp.domain.dto.BoardDto">
+        UPDATE
+        board
+        SET
+        state_del = 'Y',
+        date_mod = CURRENT_TIMESTAMP
+        WHERE state_del = 'N'
+        <if test="memberIdx != null and memberIdx != ''">
+            AND member_idx = #{memberIdx}
+        </if>
+        <if test="boardIdx != null and boardIdx != ''">
+            AND board_idx = #{boardIdx}
+        </if>
+    </update>
+</mapper>
